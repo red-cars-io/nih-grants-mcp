@@ -2,15 +2,24 @@
   "actorSpecification": 1,
   "name": "nih-grants-mcp",
   "title": "NIH Grants MCP",
-  "description": "Search NIH grants, funding trends, and institutional analysis via RePORTER API",
-  "version": "1.0",
+  "description": "NIH RePORTER grant intelligence for AI agents. Search NIH grants, publications, organization funding profiles, researcher career data, and funding trends via the NIH RePORTER API.",
+  "version": "0.0",
   "meta": {
     "templateId": "standby-node"
   },
-  "usesStandbyMode": true,
-  "webServerMcpPath": "/mcp",
+  "input": "../input_schema.json",
+  "readme": "../README.md",
+  "categories": [
+    "MCP_SERVERS",
+    "AI"
+  ],
   "pricing": {
-    "model": "PAY_PER_EVENT"
+    "model": "EVENT"
   },
-  "categories": ["MCP_SERVERS", "AI"]
+  "defaultRunOptions": {
+    "memoryMbytes": 512,
+    "timeoutSecs": 120
+  },
+  "usesStandbyMode": true,
+  "webServerMcpPath": "/mcp"
 }

@@ -1,58 +1,83 @@
-# NIH Grants MCP — AI Agent Discoverability Reference
+# NIH Grants MCP
 
-## Tool Descriptions
+NIH RePORTER grant intelligence for AI agents. Access NIH grants, publications, organization funding profiles, researcher careers, and funding trends via the NIH RePORTER API. No API key required.
 
-### search_grants
-- **Purpose:** Search NIH funded projects by keywords, org name, PI, or fiscal year
-- **When to call:** "Find NIH grants related to [topic]" / "Search for R01 grants at MIT"
-- **Example AI prompt:** "Show me all NIH grants in 2024 related to CRISPR at Stanford"
-- **Price:** $0.05
+## When to call
 
-### get_grant_details
-- **Purpose:** Retrieve full details for a specific NIH grant by project number
-- **When to call:** After finding a grant number — "Get the details for R01-AG012345"
-- **Example AI prompt:** "Give me the abstract and budget for grant U01-CA123456"
-- **Price:** $0.03
+Use this MCP when you need to:
+- Search NIH grants by topic, organization, PI, or fiscal year
+- Get detailed information for specific grants
+- Find publications linked to a specific NIH grant
+- Analyze organization funding totals and top funded areas
+- Research PI career funding history and active grants
+- Track aggregate funding trends by research area
+- Perform grant due diligence for academic or investment decisions
+- Analyze NIH funding patterns for science policy research
 
-### find_grant_citations
-- **Purpose:** Find publications linked to a specific NIH grant
-- **When to call:** "What papers resulted from this grant?" / Link grants to academic literature
-- **Example AI prompt:** "What publications came from grant P01-GM123456?"
-- **Price:** $0.03
+## Tools
 
-### organization_funding_profile
-- **Purpose:** Complete funding portfolio analysis for any institution
-- **When to call:** "What is [University]'s NIH funding?" / Analyze research strength of an org
-- **Example AI prompt:** "Give me the NIH funding profile for Johns Hopkins Hospital including top research areas"
-- **Price:** $0.08
+| Tool | Price | Description |
+|------|-------|-------------|
+| search_grants | $0.05 | Search NIH grants by query, organization, PI, or fiscal year |
+| get_grant_details | $0.03 | Get detailed information for a specific grant by project number |
+| find_grant_citations | $0.03 | Find publications linked to a specific NIH grant |
+| organization_funding_profile | $0.08 | Get aggregate funding totals for an institution |
+| researcher_profile | $0.05 | Get career funding history for a principal investigator |
+| funding_trends | $0.08 | Get aggregate funding statistics by research area |
 
-### researcher_profile
-- **Purpose:** Career funding history for a principal investigator
-- **When to call:** "What is Dr. [Name]'s NIH funding history?" / Researcher due diligence
-- **Example AI prompt:** "Show me Dr. Rachel Kim's total NIH funding and active grants"
-- **Price:** $0.05
+## Example AI Prompt
 
-### funding_trends
-- **Purpose:** Aggregate funding trends by research area over multiple years
-- **When to call:** "Is funding for [area] increasing or decreasing?" / Market research
-- **Example AI prompt:** "Show me 5-year NIH funding trends for gene therapy research"
-- **Price:** $0.08
+"Find recent NIH grants on CRISPR gene editing at MIT in the last 3 years"
 
----
+## Example AI Prompt
 
-## Cross-MCP Chain References
+"Get the detailed funding information for grant 1R01CA123456-01"
 
-Each tool output includes a `cross_sell` field suggesting the next MCP call:
+## Example AI Prompt
 
-| From This Tool | Cross-Sell To | Why |
-|----------------|---------------|-----|
-| `organization_funding_profile` | `academic-research-mcp:search_papers` | Find papers in org's research areas |
-| `researcher_profile` | `academic-research-mcp:find_citations` | Link PI's grants to their publications |
-| `search_grants` | `healthcare-compliance-mcp:search_clinical_trials` | Link grants to related trials |
-| `funding_trends` | `university-research-mcp:benchmark_institutions` | Compare institutions |
+"Compare total NIH funding between Harvard and Stanford in 2024"
+
+## Example AI Prompt
+
+"What are the top funded research areas in neuroscience for 2024?"
 
 ---
 
-## Free API Note
+## MCP Server Details
 
-This MCP uses the **NIH RePORTER v2 API** which is completely free — no API key required. Rate limit: ~1 request/second recommended.
+**Endpoint:** `https://red-cars--nih-grants-mcp.apify.actor/mcp`
+
+## Quick Start
+
+```json
+{
+  "mcpServers": {
+    "nih-grants-mcp": {
+      "url": "https://red-cars--nih-grants-mcp.apify.actor/mcp"
+    }
+  }
+}
+```
+
+No API key required. AI agents can call tools directly via the MCP protocol.
+
+## Data Sources
+
+| Source | API |
+|--------|-----|
+| NIH Grants | api.reporter.nih.gov/v2/projects/search |
+| NIH Publications | api.reporter.nih.gov/v2/publications/search |
+
+## Pricing
+
+PPE (Pay-Per-Event) — $0.03-$0.08 per tool call. No subscription required.
+
+## Cross-sell Chain
+
+- healthcare-compliance-mcp — Medical device compliance (device ↔ grant overlap)
+- academic-research-mcp — Paper search and citations
+- drug-intelligence-mcp — Pharmaceutical research (drug ↔ grant overlap)
+
+## SEO Keywords
+
+NIH grants MCP, NIH RePORTER API, grant search, academic funding, researcher profile, organization funding, funding trends, science policy, AI agent NIH, MCP server, LLM grant research, Claude NIH, Cursor academic, research funding AI, institutional analysis, PI career funding, grant due diligence, healthcare AI, AI agent research, academic intelligence

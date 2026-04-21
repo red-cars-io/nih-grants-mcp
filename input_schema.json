@@ -23,7 +23,7 @@
       "type": "object",
       "description": "Tool parameters as JSON object",
       "editor": "json",
-      "prefill": {"query": "machine learning", "limit": 10}
+      "prefill": {"query": "cancer", "limit": 1}
     }
   }
 }
