@@ -266,7 +266,7 @@ async function fundingTrends(args) {
   const trends = {};
   for (const year of years) {
     const criteria = { fiscal_years: [year] };
-    if (research_area) criteria.criteria = { term: research_area };
+    if (research_area) criteria.term = { term: research_area };
     if (organization_type) criteria.organization_types = [organization_type];
     const body = {
       criteria,
@@ -289,9 +289,13 @@ async function fundingTrends(args) {
 // HTTP SERVER FOR STANDBY MODE
 // ============================================
 
+console.log('Starting NIH Grants MCP...');
+
 await Actor.init();
+console.log('Actor.init() complete');
 
 const isStandby = Actor.config.get('metaOrigin') === 'STANDBY';
+console.log('isStandby:', isStandby);
 
 if (isStandby) {
   const PORT = Actor.config.get('containerPort') || process.env.ACTOR_WEB_SERVER_PORT || 3000;
@@ -401,7 +405,6 @@ if (isStandby) {
 
   server.on('error', (err) => {
     console.error('Server error:', err);
-    process.exit(1);
   });
 }
 
