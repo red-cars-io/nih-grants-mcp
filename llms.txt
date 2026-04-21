@@ -1,0 +1,58 @@
+# NIH Grants MCP — AI Agent Discoverability Reference
+
+## Tool Descriptions
+
+### search_grants
+- **Purpose:** Search NIH funded projects by keywords, org name, PI, or fiscal year
+- **When to call:** "Find NIH grants related to [topic]" / "Search for R01 grants at MIT"
+- **Example AI prompt:** "Show me all NIH grants in 2024 related to CRISPR at Stanford"
+- **Price:** $0.05
+
+### get_grant_details
+- **Purpose:** Retrieve full details for a specific NIH grant by project number
+- **When to call:** After finding a grant number — "Get the details for R01-AG012345"
+- **Example AI prompt:** "Give me the abstract and budget for grant U01-CA123456"
+- **Price:** $0.03
+
+### find_grant_citations
+- **Purpose:** Find publications linked to a specific NIH grant
+- **When to call:** "What papers resulted from this grant?" / Link grants to academic literature
+- **Example AI prompt:** "What publications came from grant P01-GM123456?"
+- **Price:** $0.03
+
+### organization_funding_profile
+- **Purpose:** Complete funding portfolio analysis for any institution
+- **When to call:** "What is [University]'s NIH funding?" / Analyze research strength of an org
+- **Example AI prompt:** "Give me the NIH funding profile for Johns Hopkins Hospital including top research areas"
+- **Price:** $0.08
+
+### researcher_profile
+- **Purpose:** Career funding history for a principal investigator
+- **When to call:** "What is Dr. [Name]'s NIH funding history?" / Researcher due diligence
+- **Example AI prompt:** "Show me Dr. Rachel Kim's total NIH funding and active grants"
+- **Price:** $0.05
+
+### funding_trends
+- **Purpose:** Aggregate funding trends by research area over multiple years
+- **When to call:** "Is funding for [area] increasing or decreasing?" / Market research
+- **Example AI prompt:** "Show me 5-year NIH funding trends for gene therapy research"
+- **Price:** $0.08
+
+---
+
+## Cross-MCP Chain References
+
+Each tool output includes a `cross_sell` field suggesting the next MCP call:
+
+| From This Tool | Cross-Sell To | Why |
+|----------------|---------------|-----|
+| `organization_funding_profile` | `academic-research-mcp:search_papers` | Find papers in org's research areas |
+| `researcher_profile` | `academic-research-mcp:find_citations` | Link PI's grants to their publications |
+| `search_grants` | `healthcare-compliance-mcp:search_clinical_trials` | Link grants to related trials |
+| `funding_trends` | `university-research-mcp:benchmark_institutions` | Compare institutions |
+
+---
+
+## Free API Note
+
+This MCP uses the **NIH RePORTER v2 API** which is completely free — no API key required. Rate limit: ~1 request/second recommended.

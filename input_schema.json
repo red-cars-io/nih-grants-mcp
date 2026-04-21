@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "properties": {
+    "query": {
+      "type": "string",
+      "description": "Text search query for grants (org name, project terms, PI name)",
+      "title": "Query"
+    },
+    "fiscal_year": {
+      "type": "integer",
+      "description": "Filter by fiscal year (e.g., 2024)",
+      "title": "Fiscal Year"
+    },
+    "organization": {
+      "type": "string",
+      "description": "Filter by organization name",
+      "title": "Organization"
+    },
+    "pi_name": {
+      "type": "string",
+      "description": "Filter by principal investigator name",
+      "title": "PI Name"
+    },
+    "project_number": {
+      "type": "string",
+      "description": "NIH project number for specific grant lookup",
+      "title": "Project Number"
+    }
+  },
+  "required": []
+}

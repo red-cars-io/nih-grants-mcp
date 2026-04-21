@@ -1,0 +1,12 @@
+{
+  "name": "nih-grants-mcp",
+  "version": "1.0",
+  "description": "NIH RePORTER API MCP server for AI agents",
+  "main": "src/main.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "apify": "^3.1.0"
+  }
+}
