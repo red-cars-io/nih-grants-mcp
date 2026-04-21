@@ -291,16 +291,11 @@ async function fundingTrends(args) {
 
 console.log('Starting NIH Grants MCP...');
 
-try {
-  await Actor.init();
-  console.log('Actor.init() complete');
-} catch (err) {
-  console.error('Actor.init() failed:', err.message);
-  process.exit(1);
-}
+await Actor.init();
+console.log('Actor.init() complete');
 
 const isStandby = Actor.config.get('metaOrigin') === 'STANDBY';
-console.log('isStandby:', isStandby, 'metaOrigin:', Actor.config.get('metaOrigin'));
+console.log('isStandby:', isStandby);
 
 if (isStandby) {
   const PORT = parseInt(process.env.APIFY_CONTAINER_PORT || process.env.ACTOR_WEB_SERVER_PORT || process.env.PORT || '3000', 10);
