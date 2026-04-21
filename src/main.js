@@ -1,11 +1,11 @@
 import http from 'http';
-import { URL } from 'url';
+import { Actor } from 'apify';
 
 // NIH RePORTER API base
 const NIH_API_BASE = 'https://api.reporter.nih.gov/v2';
 
 // MCP manifest
-const MANIFEST = {
+const MCP_MANIFEST = {
   name: 'nih_grants_mcp',
   version: '1.0',
   description: 'NIH RePORTER API MCP server — search grants, funding trends, and institutional analysis for AI agents',
@@ -26,8 +26,7 @@ const MANIFEST = {
           limit: { type: 'integer', description: 'Max results (default 25, max 500)', default: 25, title: 'Limit' }
         },
         required: []
-      },
-      priceUsd: 0.05
+      }
     },
     {
       name: 'get_grant_details',
@@ -38,8 +37,7 @@ const MANIFEST = {
           project_number: { type: 'string', description: 'NIH project number (e.g., "R01-AG123456")', title: 'Project Number' }
         },
         required: ['project_number']
-      },
-      priceUsd: 0.03
+      }
     },
     {
       name: 'find_grant_citations',
@@ -50,8 +48,7 @@ const MANIFEST = {
           project_number: { type: 'string', description: 'NIH project number (e.g., "R01-AG123456")', title: 'Project Number' }
         },
         required: ['project_number']
-      },
-      priceUsd: 0.03
+      }
     },
     {
       name: 'organization_funding_profile',
@@ -63,8 +60,7 @@ const MANIFEST = {
           fiscal_year: { type: 'integer', description: 'Filter by fiscal year (default: most recent)', title: 'Fiscal Year' }
         },
         required: ['organization']
-      },
-      priceUsd: 0.08
+      }
     },
     {
       name: 'researcher_profile',
@@ -75,8 +71,7 @@ const MANIFEST = {
           pi_name: { type: 'string', description: 'Principal investigator full name (e.g., "John Smith")', title: 'PI Name' }
         },
         required: ['pi_name']
-      },
-      priceUsd: 0.05
+      }
     },
     {
       name: 'funding_trends',
@@ -89,59 +84,15 @@ const MANIFEST = {
           fiscal_years: { type: 'array', items: { type: 'integer' }, description: 'Fiscal years to compare (e.g., [2022, 2023, 2024])', title: 'Fiscal Years' }
         },
         required: ['research_area']
-      },
-      priceUsd: 0.08
+      }
     }
   ]
 };
 
-// ---- HTTP Server for Standby Mode ----
-let server;
-const PORT = process.env.PORT || 8080;
+// ============================================
+// TOOL HANDLERS
+// ============================================
 
-function startHttpServer() {
-  server = http.createServer((req, res) => {
-    if (req.method === 'GET' && req.url === '/health') {
-      res.writeHead(200);
-      res.end('OK');
-      return;
-    }
-    if (req.method === 'GET' && req.url === '/mcp') {
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(MANIFEST));
-      return;
-    }
-    res.writeHead(404);
-    res.end('Not found');
-  });
-  server.listen(PORT, () => console.log(`NIH Grants MCP HTTP server listening on ${PORT}`));
-  server.on('error', (err) => { console.error('Server error:', err); process.exit(1); });
-}
-
-// ---- MCP Request Handler ----
-async function handleRequest(obj) {
-  const { method, params = {} } = obj;
-  switch (method) {
-    case 'tools/list': {
-      return { tools: MANIFEST.tools.map(({ name, description, inputSchema }) => ({ name, description, inputSchema })) };
-    }
-    case 'tools/call': {
-      const { name, arguments: args = {} } = params;
-      switch (name) {
-        case 'search_grants': return searchGrants(args);
-        case 'get_grant_details': return getGrantDetails(args);
-        case 'find_grant_citations': return findGrantCitations(args);
-        case 'organization_funding_profile': return organizationFundingProfile(args);
-        case 'researcher_profile': return researcherProfile(args);
-        case 'funding_trends': return fundingTrends(args);
-        default: throw new Error(`Unknown tool: ${name}`);
-      }
-    }
-    default: throw new Error(`Unknown method: ${method}`);
-  }
-}
-
-// ---- API Calls ----
 async function nihRequest(endpoint, body, timeout = 120000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeout);
@@ -156,6 +107,18 @@ async function nihRequest(endpoint, body, timeout = 120000) {
     return res.json();
   } finally {
     clearTimeout(timer);
+  }
+}
+
+async function handleTool(toolName, toolArgs) {
+  switch (toolName) {
+    case 'search_grants': return searchGrants(toolArgs);
+    case 'get_grant_details': return getGrantDetails(toolArgs);
+    case 'find_grant_citations': return findGrantCitations(toolArgs);
+    case 'organization_funding_profile': return organizationFundingProfile(toolArgs);
+    case 'researcher_profile': return researcherProfile(toolArgs);
+    case 'funding_trends': return fundingTrends(toolArgs);
+    default: throw new Error(`Unknown tool: ${toolName}`);
   }
 }
 
@@ -187,7 +150,7 @@ async function searchGrants(args) {
     fiscal_year: p.fiscal_year,
     research_area: p.research_classifications?.[0] || 'N/A'
   }));
-  return { content: [{ type: 'text', text: JSON.stringify({ count: results.length, results }) }] };
+  return { count: results.length, results };
 }
 
 async function getGrantDetails(args) {
@@ -199,8 +162,8 @@ async function getGrantDetails(args) {
     include_fields: ['project_num', 'project_title', 'pi_investigators', 'organization_name', 'funding_mechanism', 'total_cost', 'total_cost_sub_award', 'award_notice_date', 'project_start_date', 'project_end_date', 'fulfillment_date', 'department_name', 'research_classifications', 'abstract_text', 'publications', 'core_project_num']
   });
   const p = data.results?.[0];
-  if (!p) return { content: [{ type: 'text', text: JSON.stringify({ error: 'Grant not found' }) }] };
-  return { content: [{ type: 'text', text: JSON.stringify({
+  if (!p) return { error: 'Grant not found' };
+  return {
     project_num: p.project_num,
     core_project_num: p.core_project_num,
     title: p.project_title,
@@ -216,7 +179,7 @@ async function getGrantDetails(args) {
     research_areas: p.research_classifications || [],
     abstract: p.abstract_text,
     publications_count: p.publications?.length || 0
-  }) }] };
+  };
 }
 
 async function findGrantCitations(args) {
@@ -236,7 +199,7 @@ async function findGrantCitations(args) {
     year: p.pub_year,
     citations: p.citation_count
   }));
-  return { content: [{ type: 'text', text: JSON.stringify({ count: pubs.length, publications: pubs }) }] };
+  return { count: pubs.length, publications: pubs };
 }
 
 async function organizationFundingProfile(args) {
@@ -261,7 +224,7 @@ async function organizationFundingProfile(args) {
   });
   const topMechanisms = Object.entries(mechanisms).sort((a, b) => b[1] - a[1]).slice(0, 5);
   const topAreas = Object.entries(areas).sort((a, b) => b[1] - a[1]).slice(0, 10);
-  return { content: [{ type: 'text', text: JSON.stringify({
+  return {
     organization,
     years_analyzed: years,
     total_grants: allResults.length,
@@ -269,7 +232,7 @@ async function organizationFundingProfile(args) {
     top_funding_mechanisms: topMechanisms,
     top_research_areas: topAreas,
     cross_sell: 'academic-research-mcp:search_papers (find related papers), healthcare-compliance-mcp:search_clinical_trials (link to trials)'
-  }) }] };
+  };
 }
 
 async function researcherProfile(args) {
@@ -286,7 +249,7 @@ async function researcherProfile(args) {
   const mechanisms = {};
   grants.forEach(p => { mechanisms[p.funding_mechanism] = (mechanisms[p.funding_mechanism] || 0) + 1; });
   const topMechanisms = Object.entries(mechanisms).sort((a, b) => b[1] - a[1]);
-  return { content: [{ type: 'text', text: JSON.stringify({
+  return {
     pi_name,
     total_active_grants: grants.length,
     total_funding: totalFunding,
@@ -294,7 +257,7 @@ async function researcherProfile(args) {
     top_funding_mechanisms: topMechanisms,
     years: [...new Set(grants.map(p => p.fiscal_year))].sort(),
     cross_sell: 'academic-research-mcp:find_citations (link grants to publications)'
-  }) }] };
+  };
 }
 
 async function fundingTrends(args) {
@@ -306,7 +269,7 @@ async function fundingTrends(args) {
     if (research_area) criteria.criteria = { term: research_area };
     if (organization_type) criteria.organization_types = [organization_type];
     const body = {
-      criteria: criteria,
+      criteria,
       offset: 0,
       limit: 500
     };
@@ -314,12 +277,184 @@ async function fundingTrends(args) {
     const total = (data.results || []).reduce((sum, p) => sum + (p.total_cost || 0), 0);
     trends[year] = { grant_count: data.results?.length || 0, total_funding: total };
   }
-  return { content: [{ type: 'text', text: JSON.stringify({
+  return {
     research_area,
     organization_type: organization_type || 'All',
     trends,
     cross_sell: 'university-research-mcp:benchmark_institutions (compare institutions)'
-  }) }] };
+  };
 }
 
-export { handleRequest, startHttpServer };
+// ============================================
+// HTTP SERVER FOR STANDBY MODE
+// ============================================
+
+await Actor.init();
+
+const isStandby = Actor.config.get('metaOrigin') === 'STANDBY';
+
+if (isStandby) {
+  const PORT = Actor.config.get('containerPort') || process.env.ACTOR_WEB_SERVER_PORT || 3000;
+
+  const server = http.createServer(async (req, res) => {
+    // Handle readiness probe
+    if (req.headers['x-apify-container-server-readiness-probe']) {
+      res.writeHead(200, { 'Content-Type': 'text/plain' });
+      res.end('OK');
+      return;
+    }
+
+    // Handle MCP requests
+    if (req.method === 'POST' && req.url === '/mcp') {
+      let body = '';
+      req.on('data', chunk => { body += chunk; });
+      req.on('end', async () => {
+        try {
+          const jsonBody = JSON.parse(body);
+          const id = jsonBody.id ?? null;
+
+          const reply = (result) => {
+            const resp = id !== null
+              ? { jsonrpc: '2.0', id, result }
+              : result;
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(resp));
+          };
+
+          const replyError = (code, message) => {
+            const resp = id !== null
+              ? { jsonrpc: '2.0', id, error: { code, message } }
+              : { status: 'error', error: message };
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(resp));
+          };
+
+          const method = jsonBody.method;
+
+          // Standard MCP: initialize
+          if (method === 'initialize') {
+            return reply({
+              protocolVersion: '2024-11-05',
+              capabilities: { tools: {} },
+              serverInfo: { name: 'nih-grants-mcp', version: '1.0' }
+            });
+          }
+
+          // Standard MCP: tools/list
+          if (method === 'tools/list' || (!method && jsonBody.tool === 'list')) {
+            return reply({ tools: MCP_MANIFEST.tools });
+          }
+
+          // Standard MCP: tools/call
+          if (method === 'tools/call') {
+            const toolName = jsonBody.params?.name;
+            const toolArgs = jsonBody.params?.arguments || {};
+            if (!toolName) return replyError(-32602, 'Missing params.name');
+            const toolResult = await handleTool(toolName, toolArgs);
+            return reply({
+              content: [{ type: 'text', text: JSON.stringify(toolResult, null, 2) }]
+            });
+          }
+
+          // Legacy: tools/{toolName} method format
+          if (method && method.startsWith('tools/')) {
+            const toolName = method.slice(6);
+            const toolArgs = jsonBody.params || {};
+            const toolResult = await handleTool(toolName, toolArgs);
+            return reply({
+              content: [{ type: 'text', text: JSON.stringify(toolResult, null, 2) }]
+            });
+          }
+
+          // Legacy direct: {tool: "...", params: {...}}
+          if (jsonBody.tool) {
+            const toolResult = await handleTool(jsonBody.tool, jsonBody.params || {});
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ status: 'success', result: toolResult }));
+            return;
+          }
+
+          replyError(-32601, 'Method not found');
+        } catch (error) {
+          console.error('Error:', error.message);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ status: 'error', error: error.message }));
+        }
+      });
+      return;
+    }
+
+    // Health check at root
+    if (req.method === 'GET' && (req.url === '/' || req.url === '/health')) {
+      res.writeHead(200, { 'Content-Type': 'text/plain' });
+      res.end('OK');
+      return;
+    }
+
+    res.writeHead(404);
+    res.end('Not found');
+  });
+
+  server.listen(PORT, () => {
+    console.log(`NIH Grants MCP HTTP server listening on port ${PORT}`);
+  });
+
+  server.on('error', (err) => {
+    console.error('Server error:', err);
+    process.exit(1);
+  });
+}
+
+await Actor.exit();
+
+// Export handleRequest for MCP gateway compatibility
+export default {
+  handleRequest: async ({ request, response, log }) => {
+    log.info('NIH Grants MCP received request');
+
+    try {
+      const body = typeof request.body === 'string' ? JSON.parse(request.body) : request.body;
+      const id = body.id ?? null;
+      const method = body.method;
+
+      const reply = (result) => {
+        const resp = id !== null
+          ? { jsonrpc: '2.0', id, result }
+          : result;
+        response.send({ status: 'success', result: resp });
+      };
+
+      const replyError = (code, message) => {
+        const resp = id !== null
+          ? { jsonrpc: '2.0', id, error: { code, message } }
+          : { status: 'error', error: message };
+        response.send({ status: 'error', error: resp });
+      };
+
+      if (method === 'initialize') {
+        return reply({
+          protocolVersion: '2024-11-05',
+          capabilities: { tools: {} },
+          serverInfo: { name: 'nih-grants-mcp', version: '1.0' }
+        });
+      }
+
+      if (method === 'tools/list') {
+        return reply({ tools: MCP_MANIFEST.tools });
+      }
+
+      if (method === 'tools/call') {
+        const toolName = body.params?.name;
+        const toolArgs = body.params?.arguments || {};
+        if (!toolName) return replyError(-32602, 'Missing params.name');
+        const toolResult = await handleTool(toolName, toolArgs);
+        return reply({ content: [{ type: 'text', text: JSON.stringify(toolResult, null, 2) }] });
+      }
+
+      replyError(-32601, 'Method not found');
+    } catch (error) {
+      log.error(`Error: ${error.message}`);
+      response.send({ status: 'error', error: error.message });
+    }
+  }
+};
