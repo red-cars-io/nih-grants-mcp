@@ -298,7 +298,8 @@ const isStandby = Actor.config.get('metaOrigin') === 'STANDBY';
 console.log('isStandby:', isStandby);
 
 if (isStandby) {
-  const PORT = Actor.config.get('containerPort') || process.env.ACTOR_WEB_SERVER_PORT || 3000;
+  const PORT = parseInt(process.env.APIFY_CONTAINER_PORT || process.env.ACTOR_WEB_SERVER_PORT || process.env.PORT || '3000', 10);
+  console.log('Starting HTTP server on port:', PORT);
 
   const server = http.createServer(async (req, res) => {
     // Handle readiness probe
