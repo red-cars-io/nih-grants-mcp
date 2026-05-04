@@ -1,6 +1,6 @@
 # NIH Grants MCP Server
 
-> **[View on Apify](https://apify.com)** | **[Use on Apify Store](https://apify.com)**
+> **[View on Apify](https://apify.com/red.cars/nih-grants-mcp)** | **[Use on Apify Store](https://apify.com/red.cars/nih-grants-mcp)**
 
 AI agents for NIH grant research — access NIH RePORTER data on grants, publications, organization funding profiles, researcher careers, and funding trends.
 
@@ -187,7 +187,7 @@ Returns: total_funding, total_grants, average_grant_size, top_organizations, top
 
 ### Step 1: Get your Apify API token (optional)
 
-Sign up at [apify.com](https://apify.com) and copy your API token from the console. The MCP works without an API token for tool calls, but Apify authentication may be required by some MCP clients.
+Sign up at [apify.com](https://apify.com/red.cars/nih-grants-mcp) and copy your API token from the console. The MCP works without an API token for tool calls, but Apify authentication may be required by some MCP clients.
 
 ### Step 2: Add the MCP server to your client
 
@@ -465,9 +465,15 @@ AI agents researching a grant can: (1) find funding opportunities, (2) verify me
 
 ---
 
+## Comparison
+
+For a detailed comparison with NIH RePORTER and other alternatives, see [COMPARISON.md](COMPARISON.md).
+
+---
+
 ## SEO Keywords
 
-NIH grants MCP, NIH RePORTER API, grant search, academic funding, researcher profile, organization funding, funding trends, science policy, AI agent NIH, MCP server, LLM grant research, Claude NIH, Cursor academic, research funding AI, institutional analysis, PI career funding, grant due diligence, healthcare AI, AI agent research, academic intelligence
+NIH grants MCP, NIH RePORTER API, grant search, academic funding, researcher profile, organization funding, funding trends, science policy, AI agent NIH, MCP server, LLM grant research, Claude NIH, Cursor academic, research funding AI, institutional analysis, PI career funding, grant due diligence, healthcare AI, AI agent research, academic intelligence, [Comparison: vs NIH RePORTER](COMPARISON.md)
 
 ---
 
